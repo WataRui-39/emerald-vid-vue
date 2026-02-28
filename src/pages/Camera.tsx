@@ -53,9 +53,21 @@ const Camera = () => {
     canvas.height = video.videoHeight;
     canvas.getContext("2d")?.drawImage(video, 0, 0);
     setPhoto(canvas.toDataURL("image/jpeg", 0.9));
+
+    // Immediately stop camera for security
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop());
+      setStream(null);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   };
 
-  const retake = () => setPhoto(null);
+  const retake = () => {
+    setPhoto(null);
+    startCamera();
+  };
 
   const acceptPhoto = () => {
     navigate("/home");

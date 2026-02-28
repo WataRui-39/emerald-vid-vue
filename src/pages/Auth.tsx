@@ -37,10 +37,16 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // Check if user has completed onboarding
+        const { data: prefs } = await supabase
+          .from("user_preferences")
+          .select("id")
+          .eq("user_id", authData.user.id)
+          .maybeSingle();
         toast.success("Welcome back!");
-        navigate("/camera");
+        navigate(prefs ? "/camera" : "/onboarding");
       } else {
         const { error } = await supabase.auth.signUp({
           email,

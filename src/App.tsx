@@ -10,6 +10,7 @@ import Camera from "./pages/Camera";
 import Profile from "./pages/Profile";
 import Watch from "./pages/Watch";
 import Kids from "./pages/Kids";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/profile/:userId" element={<Profile />} />
           <Route path="/watch/:videoId" element={<Watch />} />
           <Route path="/kids" element={<Kids />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
