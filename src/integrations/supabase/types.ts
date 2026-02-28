@@ -197,7 +197,13 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      channel_fan_counts: {
+        Row: {
+          channel_id: string | null
+          fan_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
