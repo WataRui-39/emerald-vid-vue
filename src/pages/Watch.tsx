@@ -26,6 +26,16 @@ const Watch = () => {
     }
   }, [videoId]);
 
+  // Record a view when the video is played
+  useEffect(() => {
+    if (videoId && user) {
+      supabase.from("video_views").insert({
+        video_id: videoId,
+        viewer_id: user.id,
+      }).then();
+    }
+  }, [videoId, user]);
+
   useEffect(() => {
     if (video && user) {
       checkLiked();
