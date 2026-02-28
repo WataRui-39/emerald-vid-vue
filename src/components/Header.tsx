@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Camera, Menu, LogOut, User } from "lucide-react";
+import { Search, Menu, LogOut, User, Baby } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +26,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/80 backdrop-blur-xl">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
+        <Link to="/home" className="flex items-center gap-2 shrink-0">
           <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-lg font-['Space_Grotesk']">V</span>
           </div>
@@ -58,9 +58,10 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 className="text-muted-foreground hover:text-foreground"
-                onClick={() => navigate("/camera")}
+                onClick={() => navigate("/kids")}
+                title="Kids Mode"
               >
-                <Camera className="h-5 w-5" />
+                <Baby className="h-5 w-5" />
               </Button>
               <Button
                 variant="ghost"

@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera as CameraIcon, SwitchCamera, X, Check, RotateCcw } from "lucide-react";
+import { Camera as CameraIcon, SwitchCamera, Check, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
@@ -36,7 +36,7 @@ const Camera = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate("/auth");
+      navigate("/");
       return;
     }
     startCamera();
@@ -58,8 +58,7 @@ const Camera = () => {
   const retake = () => setPhoto(null);
 
   const acceptPhoto = () => {
-    // For now, navigate home with the photo taken
-    navigate("/");
+    navigate("/home");
   };
 
   const toggleCamera = () => {
@@ -130,14 +129,7 @@ const Camera = () => {
               >
                 <div className="h-12 w-12 rounded-full gradient-primary" />
               </button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => navigate("/")}
-                className="h-12 w-12 rounded-full"
-              >
-                <X className="h-5 w-5" />
-              </Button>
+              <div className="h-12 w-12" /> {/* Spacer for symmetry */}
             </>
           )}
         </div>
