@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Upload from "./pages/Upload";
 import Camera from "./pages/Camera";
 import Profile from "./pages/Profile";
+import Kids from "./pages/Kids";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,11 +20,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Auth />} />
+          <Route path="/home" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/camera" element={<Camera />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/kids" element={<Kids />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
