@@ -68,6 +68,7 @@ const Index = () => {
           duration: formatDuration(v.duration || 0),
           uploadedAt: new Date(v.created_at).toLocaleDateString(),
           category: v.category || "General",
+          videoUrl: v.video_url,
         };
       })
     : sampleVideos;
