@@ -1,0 +1,1 @@
+ALTER TABLE public.classes ADD COLUMN available_dates date[] DEFAULT '{}'::date[];

@@ -84,6 +84,7 @@ export type Database = {
       }
       classes: {
         Row: {
+          available_dates: string[] | null
           category: string | null
           created_at: string
           creator_id: string
@@ -95,6 +96,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          available_dates?: string[] | null
           category?: string | null
           created_at?: string
           creator_id: string
@@ -106,6 +108,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          available_dates?: string[] | null
           category?: string | null
           created_at?: string
           creator_id?: string
