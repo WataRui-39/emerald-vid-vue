@@ -94,6 +94,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          created_at: string
+          experience_level: string | null
+          id: string
+          interests: string[] | null
+          learning_goals: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          experience_level?: string | null
+          id?: string
+          interests?: string[] | null
+          learning_goals?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          experience_level?: string | null
+          id?: string
+          interests?: string[] | null
+          learning_goals?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       videos: {
         Row: {
           category: string | null
