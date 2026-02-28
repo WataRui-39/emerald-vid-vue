@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Upload from "./pages/Upload";
 import Camera from "./pages/Camera";
 import Profile from "./pages/Profile";
+import Watch from "./pages/Watch";
 import Kids from "./pages/Kids";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/camera" element={<Camera />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:userId" element={<Profile />} />
+          <Route path="/watch/:videoId" element={<Watch />} />
           <Route path="/kids" element={<Kids />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
