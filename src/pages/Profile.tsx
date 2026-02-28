@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Upload as UploadIcon, Film, Heart, Users, Video, ImageIcon } from "lucide-react";
+import { Upload as UploadIcon, Film, Heart, Users, Video, ImageIcon, BookOpen, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import VideoCard from "@/components/VideoCard";
+import CreateClassDialog from "@/components/CreateClassDialog";
+import ClassCard from "@/components/ClassCard";
 
 const Profile = () => {
   const { user, loading } = useAuth();
@@ -20,6 +22,8 @@ const Profile = () => {
   const [myVideos, setMyVideos] = useState<any[]>([]);
   const [likedVideos, setLikedVideos] = useState<any[]>([]);
   const [subscribedVideos, setSubscribedVideos] = useState<any[]>([]);
+  const [myClasses, setMyClasses] = useState<any[]>([]);
+  const [enrolledClasses, setEnrolledClasses] = useState<any[]>([]);
 
   // Upload state
   const [title, setTitle] = useState("");
@@ -43,9 +47,11 @@ const Profile = () => {
     if (viewingUserId) {
       fetchProfile();
       fetchUserVideos();
+      fetchMyClasses();
       if (isOwnProfile) {
         fetchLikedVideos();
         fetchSubscribedVideos();
+        fetchEnrolledClasses();
       }
     }
   }, [user, loading, viewingUserId]);
@@ -92,6 +98,71 @@ const Profile = () => {
         .order("created_at", { ascending: false })
         .limit(20);
       setSubscribedVideos(videos || []);
+    }
+  };
+
+  const fetchMyClasses = async () => {
+    const { data } = await supabase
+      .from("classes" as any)
+      .select("*")
+      .eq("creator_id", viewingUserId!)
+      .order("created_at", { ascending: false });
+    
+    if (data) {
+      // Fetch video counts and student counts for each class
+      const enriched = await Promise.all(
+        (data as any[]).map(async (cls: any) => {
+          const { count: videoCount } = await supabase
+            .from("class_videos" as any)
+            .select("*", { count: "exact", head: true })
+            .eq("class_id", cls.id);
+          const { count: studentCount } = await supabase
+            .from("class_enrollments" as any)
+            .select("*", { count: "exact", head: true })
+            .eq("class_id", cls.id);
+          return { ...cls, videoCount: videoCount || 0, studentCount: studentCount || 0 };
+        })
+      );
+      setMyClasses(enriched);
+    }
+  };
+
+  const fetchEnrolledClasses = async () => {
+    if (!user) return;
+    const { data: enrollments } = await supabase
+      .from("class_enrollments" as any)
+      .select("class_id")
+      .eq("student_id", user.id);
+    
+    if (enrollments && enrollments.length > 0) {
+      const classIds = (enrollments as any[]).map((e: any) => e.class_id);
+      const { data: classes } = await supabase
+        .from("classes" as any)
+        .select("*")
+        .in("id", classIds);
+      
+      if (classes) {
+        const enriched = await Promise.all(
+          (classes as any[]).map(async (cls: any) => {
+            const { count: videoCount } = await supabase
+              .from("class_videos" as any)
+              .select("*", { count: "exact", head: true })
+              .eq("class_id", cls.id);
+            // Fetch creator name
+            const { data: creatorProfile } = await supabase
+              .from("profiles")
+              .select("display_name, username")
+              .eq("user_id", cls.creator_id)
+              .single();
+            return {
+              ...cls,
+              videoCount: videoCount || 0,
+              creatorName: creatorProfile?.display_name || creatorProfile?.username || "Tutor",
+            };
+          })
+        );
+        setEnrolledClasses(enriched);
+      }
     }
   };
 
@@ -203,12 +274,18 @@ const Profile = () => {
         </div>
 
         <Tabs defaultValue="uploads" className="w-full">
-          <TabsList className="w-full justify-start bg-muted/50 mb-6">
+          <TabsList className="w-full justify-start bg-muted/50 mb-6 flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="uploads" className="gap-2">
               <Video className="h-4 w-4" /> {isOwnProfile ? "My Videos" : "Videos"}
             </TabsTrigger>
+            <TabsTrigger value="classes" className="gap-2">
+              <BookOpen className="h-4 w-4" /> {isOwnProfile ? "My Classes" : "Classes"}
+            </TabsTrigger>
             {isOwnProfile && (
               <>
+                <TabsTrigger value="enrolled" className="gap-2">
+                  <GraduationCap className="h-4 w-4" /> Enrolled
+                </TabsTrigger>
                 <TabsTrigger value="liked" className="gap-2">
                   <Heart className="h-4 w-4" /> Liked
                 </TabsTrigger>
@@ -237,8 +314,65 @@ const Profile = () => {
             )}
           </TabsContent>
 
+          {/* Classes tab - visible to everyone */}
+          <TabsContent value="classes">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold font-['Space_Grotesk'] text-foreground">
+                {isOwnProfile ? "My Tutoring Classes" : "Tutoring Classes"}
+              </h2>
+              {isOwnProfile && user && (
+                <CreateClassDialog userId={user.id} onCreated={fetchMyClasses} />
+              )}
+            </div>
+            {myClasses.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>{isOwnProfile ? "You haven't created any classes yet." : "No classes yet."}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {myClasses.map((cls: any) => (
+                  <ClassCard
+                    key={cls.id}
+                    title={cls.title}
+                    description={cls.description}
+                    category={cls.category}
+                    price={Number(cls.price)}
+                    videoCount={cls.videoCount}
+                    studentCount={cls.studentCount}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
           {isOwnProfile && (
             <>
+              {/* Enrolled classes tab */}
+              <TabsContent value="enrolled">
+                {enrolledClasses.length === 0 ? (
+                  <div className="text-center py-16 text-muted-foreground">
+                    <GraduationCap className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>You haven't enrolled in any classes yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {enrolledClasses.map((cls: any) => (
+                      <ClassCard
+                        key={cls.id}
+                        title={cls.title}
+                        description={cls.description}
+                        category={cls.category}
+                        price={Number(cls.price)}
+                        videoCount={cls.videoCount}
+                        studentCount={0}
+                        creatorName={cls.creatorName}
+                      />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
               <TabsContent value="liked">
                 {likedVideos.length === 0 ? (
                   <div className="text-center py-16 text-muted-foreground">
