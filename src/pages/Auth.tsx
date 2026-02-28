@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Check, X } from "lucide-react";
+
+const passwordRules = [
+  { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
+  { label: "Uppercase letter (A-Z)", test: (p: string) => /[A-Z]/.test(p) },
+  { label: "Lowercase letter (a-z)", test: (p: string) => /[a-z]/.test(p) },
+  { label: "Special character (!@#$%...)", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,8 +23,16 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const allRulesPass = passwordRules.every((r) => r.test(password));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isLogin && !allRulesPass) {
+      toast.error("Password does not meet all requirements.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -50,10 +65,10 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl gradient-primary mx-auto mb-4 flex items-center justify-center shadow-elevated">
-            <span className="text-primary-foreground text-3xl font-bold font-['Space_Grotesk']">V</span>
+            <span className="text-primary-foreground text-3xl font-bold font-['Space_Grotesk']">E</span>
           </div>
           <h1 className="text-3xl font-bold text-primary-foreground font-['Space_Grotesk']">
-            {isLogin ? "Welcome Back" : "Join VidFlow"}
+            {isLogin ? "Welcome Back" : "Join Everyone's a Teacher"}
           </h1>
           <p className="text-primary-foreground/70 mt-2">
             {isLogin ? "Sign in to your account" : "Create your free account"}
@@ -97,7 +112,6 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  minLength={6}
                   className="bg-muted/50 pr-10"
                 />
                 <button
@@ -108,8 +122,33 @@ const Auth = () => {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+
+              {/* Password strength indicators - only show on signup */}
+              {!isLogin && password.length > 0 && (
+                <div className="space-y-1 mt-2">
+                  {passwordRules.map((rule) => {
+                    const passes = rule.test(password);
+                    return (
+                      <div key={rule.label} className="flex items-center gap-2 text-xs">
+                        {passes ? (
+                          <Check className="h-3.5 w-3.5 text-green-500" />
+                        ) : (
+                          <X className="h-3.5 w-3.5 text-destructive" />
+                        )}
+                        <span className={passes ? "text-green-500" : "text-muted-foreground"}>
+                          {rule.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            <Button type="submit" disabled={loading} className="w-full gradient-primary text-primary-foreground border-0 h-11">
+            <Button
+              type="submit"
+              disabled={loading || (!isLogin && !allRulesPass)}
+              className="w-full gradient-primary text-primary-foreground border-0 h-11"
+            >
               {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
             </Button>
           </form>

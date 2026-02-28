@@ -2,18 +2,27 @@ import { useState } from "react";
 
 const categories = [
   "All", "Music", "Gaming", "Education", "Sports", "News",
-  "Entertainment", "Technology", "Cooking", "Travel", "Fitness"
+  "Entertainment", "Technology", "Cooking", "Travel", "Fitness", "General"
 ];
 
-const CategoryChips = () => {
+interface CategoryChipsProps {
+  onCategoryChange?: (category: string) => void;
+}
+
+const CategoryChips = ({ onCategoryChange }: CategoryChipsProps) => {
   const [active, setActive] = useState("All");
+
+  const handleClick = (cat: string) => {
+    setActive(cat);
+    onCategoryChange?.(cat);
+  };
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
       {categories.map((cat) => (
         <button
           key={cat}
-          onClick={() => setActive(cat)}
+          onClick={() => handleClick(cat)}
           className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
             active === cat
               ? "gradient-primary text-primary-foreground shadow-card"
