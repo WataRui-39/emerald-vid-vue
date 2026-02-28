@@ -26,6 +26,7 @@ const App = () => (
           <Route path="/upload" element={<Upload />} />
           <Route path="/camera" element={<Camera />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:userId" element={<Profile />} />
           <Route path="/kids" element={<Kids />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
