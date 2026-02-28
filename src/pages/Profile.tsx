@@ -340,6 +340,8 @@ const Profile = () => {
                     price={Number(cls.price)}
                     videoCount={cls.videoCount}
                     studentCount={cls.studentCount}
+                    availableDates={cls.available_dates}
+                    isOwnClass={isOwnProfile}
                   />
                 ))}
               </div>
@@ -367,6 +369,7 @@ const Profile = () => {
                         videoCount={cls.videoCount}
                         studentCount={0}
                         creatorName={cls.creatorName}
+                        availableDates={cls.available_dates}
                       />
                     ))}
                   </div>
