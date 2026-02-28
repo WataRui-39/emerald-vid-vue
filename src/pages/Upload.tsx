@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload as UploadIcon, Film } from "lucide-react";
+import { Upload as UploadIcon, Film, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -19,6 +20,68 @@ const Upload = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [thumbnailTime, setThumbnailTime] = useState(0);
+  const [thumbnailDataUrl, setThumbnailDataUrl] = useState<string | null>(null);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const handleFileChange = (file: File | null) => {
+    setVideoFile(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setVideoUrl(url);
+    } else {
+      setVideoUrl(null);
+      setThumbnailDataUrl(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+    };
+  }, [videoUrl]);
+
+  const handleVideoLoaded = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    setVideoDuration(video.duration);
+    // Capture first frame as default thumbnail
+    video.currentTime = 0;
+  };
+
+  const handleSeeked = () => {
+    captureFrame();
+  };
+
+  const captureFrame = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    setThumbnailDataUrl(canvas.toDataURL("image/jpeg", 0.85));
+  };
+
+  const handleSliderChange = (value: number[]) => {
+    const time = value[0];
+    setThumbnailTime(time);
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+    }
+  };
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,22 +94,39 @@ const Upload = () => {
       const fileExt = videoFile.name.split(".").pop();
       const filePath = `${user.id}/${Date.now()}.${fileExt}`;
 
-      setProgress(30);
+      setProgress(20);
       const { error: uploadError } = await supabase.storage
         .from("videos")
         .upload(filePath, videoFile);
 
       if (uploadError) throw uploadError;
-      setProgress(70);
+      setProgress(50);
 
       const { data: urlData } = supabase.storage.from("videos").getPublicUrl(filePath);
+
+      // Upload thumbnail if captured
+      let thumbnailUrl: string | null = null;
+      if (thumbnailDataUrl) {
+        const blob = await (await fetch(thumbnailDataUrl)).blob();
+        const thumbPath = `${user.id}/${Date.now()}_thumb.jpg`;
+        const { error: thumbError } = await supabase.storage
+          .from("videos")
+          .upload(thumbPath, blob, { contentType: "image/jpeg" });
+        if (!thumbError) {
+          const { data: thumbUrl } = supabase.storage.from("videos").getPublicUrl(thumbPath);
+          thumbnailUrl = thumbUrl.publicUrl;
+        }
+      }
+      setProgress(70);
 
       const { error: dbError } = await supabase.from("videos").insert({
         user_id: user.id,
         title,
         description,
         video_url: urlData.publicUrl,
+        thumbnail_url: thumbnailUrl,
         category,
+        duration: Math.round(videoDuration),
       });
 
       if (dbError) throw dbError;
@@ -82,7 +162,7 @@ const Upload = () => {
             <input
               type="file"
               accept="video/*"
-              onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+              onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
             {videoFile ? (
@@ -100,6 +180,56 @@ const Upload = () => {
               </>
             )}
           </div>
+
+          {/* Thumbnail picker */}
+          {videoUrl && (
+            <div className="space-y-3 rounded-2xl border border-border p-4 bg-muted/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Camera className="h-4 w-4 text-primary" />
+                <Label className="text-foreground font-semibold">Choose Thumbnail</Label>
+              </div>
+
+              {/* Hidden video for frame capture */}
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                onLoadedMetadata={handleVideoLoaded}
+                onSeeked={handleSeeked}
+                className="hidden"
+                muted
+                preload="metadata"
+              />
+              <canvas ref={canvasRef} className="hidden" />
+
+              {/* Thumbnail preview */}
+              {thumbnailDataUrl && (
+                <div className="rounded-xl overflow-hidden border border-border">
+                  <img
+                    src={thumbnailDataUrl}
+                    alt="Selected thumbnail"
+                    className="w-full aspect-video object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Slider */}
+              {videoDuration > 0 && (
+                <div className="space-y-1">
+                  <Slider
+                    value={[thumbnailTime]}
+                    min={0}
+                    max={videoDuration}
+                    step={0.1}
+                    onValueChange={handleSliderChange}
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{formatTime(thumbnailTime)}</span>
+                    <span>{formatTime(videoDuration)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-foreground">Title</Label>
