@@ -158,6 +158,13 @@ const Watch = () => {
                 controls
                 autoPlay
                 className="w-full h-full"
+                onLoadedMetadata={(e) => {
+                  const vid = e.currentTarget;
+                  if (video && (!video.duration || video.duration === 0) && vid.duration && isFinite(vid.duration)) {
+                    const dur = Math.round(vid.duration);
+                    supabase.from("videos").update({ duration: dur }).eq("id", video.id).then();
+                  }
+                }}
               />
             </div>
 

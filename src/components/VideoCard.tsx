@@ -32,9 +32,11 @@ const VideoCard = ({ title, thumbnail, channel, views, duration, uploadedAt, onV
             <Play className="h-5 w-5 text-primary-foreground ml-0.5" fill="currentColor" />
           </div>
         </div>
-        <span className="absolute bottom-2 right-2 bg-foreground/80 text-background text-xs font-medium px-1.5 py-0.5 rounded-md">
-          {duration}
-        </span>
+        {duration && duration !== "0:00" && (
+          <span className="absolute bottom-2 right-2 bg-foreground/80 text-background text-xs font-medium px-1.5 py-0.5 rounded-md">
+            {duration}
+          </span>
+        )}
       </div>
       <div className="mt-3 flex gap-3">
         <div
