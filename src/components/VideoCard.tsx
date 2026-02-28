@@ -4,12 +4,15 @@ interface VideoCardProps {
   title: string;
   thumbnail: string;
   channel: string;
+  channelUserId?: string;
   views: number;
   duration: string;
   uploadedAt: string;
+  onVideoClick?: () => void;
+  onProfileClick?: () => void;
 }
 
-const VideoCard = ({ title, thumbnail, channel, views, duration, uploadedAt }: VideoCardProps) => {
+const VideoCard = ({ title, thumbnail, channel, views, duration, uploadedAt, onVideoClick, onProfileClick }: VideoCardProps) => {
   const formatViews = (v: number) => {
     if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
     if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
@@ -18,7 +21,7 @@ const VideoCard = ({ title, thumbnail, channel, views, duration, uploadedAt }: V
 
   return (
     <div className="group cursor-pointer">
-      <div className="relative aspect-video rounded-xl overflow-hidden bg-muted shadow-card">
+      <div className="relative aspect-video rounded-xl overflow-hidden bg-muted shadow-card" onClick={onVideoClick}>
         <img
           src={thumbnail}
           alt={title}
@@ -34,10 +37,13 @@ const VideoCard = ({ title, thumbnail, channel, views, duration, uploadedAt }: V
         </span>
       </div>
       <div className="mt-3 flex gap-3">
-        <div className="w-9 h-9 rounded-full gradient-secondary shrink-0 flex items-center justify-center">
+        <div
+          className="w-9 h-9 rounded-full gradient-secondary shrink-0 flex items-center justify-center hover:ring-2 hover:ring-primary transition-all"
+          onClick={(e) => { e.stopPropagation(); onProfileClick?.(); }}
+        >
           <span className="text-secondary-foreground text-xs font-bold">{channel[0]}</span>
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0" onClick={onVideoClick}>
           <h3 className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
             {title}
           </h3>
