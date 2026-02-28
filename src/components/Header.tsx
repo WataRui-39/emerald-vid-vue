@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Upload, Menu, LogOut, User } from "lucide-react";
+import { Search, Camera, Menu, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,9 +58,9 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 className="text-muted-foreground hover:text-foreground"
-                onClick={() => navigate("/upload")}
+                onClick={() => navigate("/camera")}
               >
-                <Upload className="h-5 w-5" />
+                <Camera className="h-5 w-5" />
               </Button>
               <Button
                 variant="ghost"
@@ -70,9 +70,12 @@ const Header = () => {
               >
                 <LogOut className="h-5 w-5" />
               </Button>
-              <div className="w-8 h-8 rounded-full gradient-secondary flex items-center justify-center">
+              <button
+                onClick={() => navigate("/profile")}
+                className="w-8 h-8 rounded-full gradient-secondary flex items-center justify-center hover:opacity-80 transition-opacity"
+              >
                 <User className="h-4 w-4 text-secondary-foreground" />
-              </div>
+              </button>
             </>
           ) : (
             <Button onClick={() => navigate("/auth")} className="gradient-primary text-primary-foreground border-0">
