@@ -28,10 +28,10 @@ const Header = () => {
         {/* Logo */}
         <Link to="/home" className="flex items-center gap-2 shrink-0">
           <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg font-['Space_Grotesk']">V</span>
+            <span className="text-primary-foreground font-bold text-lg font-['Space_Grotesk']">E</span>
           </div>
           <span className="hidden sm:block text-xl font-bold tracking-tight font-['Space_Grotesk'] text-foreground">
-            VidFlow
+            Everyone's a Teacher
           </span>
         </Link>
 
